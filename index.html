@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WMS Label Generator (v10.0)</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bwip-js/4.7.0/bwip-js.js"></script>
+  </head>
+  <body>
+    <header class="ribbon">
+      <div class="ribbon-group group-file">
+        <label>Tải File Excel</label>
+        <div id="drop-zone">
+          <p>Kéo thả file...</p>
+          <small>(Tự động đọc Cột B/A và Cột SL)</small>
+        </div>
+        <p id="status-message"></p>
+      </div>
+
+      <div class="ribbon-group group-tools hidden" id="tools-wrapper">
+        <fieldset class="tool-set">
+          <legend>Cỡ chữ (Text)</legend>
+          <div class="input-item">
+            <label for="setting-spaced-size">Giãn (pt):</label>
+            <input
+              type="range"
+              id="setting-spaced-size"
+              class="setting-range"
+              min="10"
+              max="40"
+              value="20"
+              data-unit="pt"
+            />
+            <span id="label-spaced-size">20pt</span>
+          </div>
+          <div class="input-item">
+            <label for="setting-title-size">Tiêu đề (pt):</label>
+            <input
+              type="range"
+              id="setting-title-size"
+              class="setting-range"
+              min="10"
+              max="50"
+              value="24"
+              data-unit="pt"
+            />
+            <span id="label-title-size">24pt</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="tool-set">
+          <legend>Kích thước (Barcode)</legend>
+          <div class="input-item">
+            <label for="setting-small-scale">Barcode Nhỏ:</label>
+            <input
+              type="range"
+              id="setting-small-scale"
+              class="setting-range"
+              min="1"
+              max="3"
+              value="1.5"
+              step="0.1"
+              data-unit="x"
+            />
+            <span id="label-small-scale">1.5x</span>
+          </div>
+          <div class="input-item">
+            <label for="setting-large-scale">Barcode Lớn:</label>
+            <input
+              type="range"
+              id="setting-large-scale"
+              class="setting-range"
+              min="2"
+              max="5"
+              value="2.5"
+              step="0.1"
+              data-unit="x"
+            />
+            <span id="label-large-scale">2.5x</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="tool-set">
+          <legend>Hành động</legend>
+          <button id="reset-layout-button" class="ribbon-button small">
+            Khôi phục Layout
+          </button>
+        </fieldset>
+      </div>
+
+      <div class="ribbon-group group-print">
+        <label>In ấn</label>
+        <button id="print-button" class="ribbon-button large" disabled>
+          🖨️ In
+          <span id="label-count">(0)</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <div class="preview-toolbar hidden" id="preview-toolbar">
+        <label for="preview-selector">Xem trước:</label>
+        <select id="preview-selector"></select>
+      </div>
+      <div class="preview-area" id="preview-area">
+        <div id="a4-preview-wrapper"></div>
+      </div>
+    </main>
+
+    <div id="intro-popup" class="popup-overlay hidden">
+      <div class="popup-content">
+        <h3>Hé lô!</h3>
+        <p>Đây là công cụ in nhãn Phúc làm tặng cho My</p>
+        <hr />
+        <p>Vài tính năng bổ ích:</p>
+        <ul>
+          <li>
+            <strong>Kéo thả:</strong> Nhấn và kéo các barcode/text trong khung
+            "Xem trước" để căn chỉnh vị trí.
+          </li>
+          <li>
+            <strong>Tăng giảm tùy ý:</strong> Dùng các thanh trượt trên thanh
+            công cụ (Header) để thay đổi Cỡ chữ và Kích thước Barcode.
+          </li>
+          <li>
+            <strong>Lưu tự động:</strong> Mọi thay đổi layout của anh đều được
+            tự động lưu vào trình duyệt.
+          </li>
+        </ul>
+        <button id="popup-close-btn" class="ribbon-button large">
+          My đã hiểu!
+        </button>
+      </div>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

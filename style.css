@@ -1,0 +1,349 @@
+/* --- Biến CSS (Lấy từ JS) --- */
+:root {
+  --page-width: 297mm;
+  --page-height: 210mm;
+
+  /* Cài đặt Layout (sẽ bị JS ghi đè) */
+  --small-top: 15mm;
+  --small-left: 15mm;
+  --large-top: 70mm;
+  --large-left: 148.5mm;
+  --spaced-top: 145mm;
+  --spaced-left: 148.5mm;
+  --title-top: 165mm;
+  --title-left: 148.5mm;
+  --spaced-size: 20pt;
+  --title-size: 24pt;
+  --small-scale: 1.5;
+  --large-scale: 2.5;
+
+  /* Màu sắc */
+  --primary-color: #0056b3;
+  --bg-light: #f0f2f5;
+  --bg-dark: #dee2e6;
+  --border-color: #ccc;
+}
+
+/* --- Reset & Body --- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-light);
+  color: #333;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* --- NÂNG CẤP v11.0: Giao diện Ribbon (Header) --- */
+.ribbon {
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  padding: 10px 20px; /* <-- GIẢM PADDING */
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px; /* <-- GIẢM GAP */
+}
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* <-- GIẢM GAP */
+}
+.ribbon-group > label {
+  font-size: 0.75em; /* <-- Giảm cỡ chữ */
+  color: #555;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 2px; /* <-- GIẢM MARGIN */
+}
+
+/* Nhóm Trái (File) */
+.group-file {
+  flex: 1 1 300px;
+  min-width: 250px;
+}
+/* Nhóm Giữa (Tools) */
+.group-tools {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px; /* <-- GIẢM GAP */
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  padding: 0 20px; /* <-- GIẢM PADDING */
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.tool-set {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* <-- GIẢM GAP */
+}
+.tool-set legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 8px; /* <-- GIẢM MARGIN */
+  font-size: 0.9em;
+}
+/* Nhóm Phải (In) */
+.group-print {
+  flex: 0 0 150px;
+  align-items: flex-end;
+}
+
+/* UI Chung của Ribbon */
+.input-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+.setting-input {
+  width: 50px;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+.setting-range {
+  width: 100px;
+  vertical-align: middle;
+}
+.setting-item span {
+  font-weight: bold;
+  color: var(--primary-color);
+  width: 45px;
+}
+#drop-zone {
+  border: 2px dashed var(--primary-color);
+  padding: 15px 20px; /* <-- GIẢM PADDING */
+  text-align: center;
+  color: #555;
+  background: #f9f9f9;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+#drop-zone p {
+  margin: 0;
+}
+#drop-zone small {
+  color: #777;
+  margin-top: 5px;
+  display: block;
+}
+#drop-zone.dragover {
+  background-color: #e6f7ff;
+}
+#status-message {
+  margin-top: 5px;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #d93025; /* Lỗi */
+}
+#status-message.success {
+  color: #218838; /* Thành công */
+}
+.ribbon-button {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  border: 1px solid var(--border-color);
+  background: #fdfdfd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ribbon-button.small {
+  font-size: 0.8em;
+  padding: 5px 8px;
+}
+.ribbon-button:hover {
+  background-color: #f1f1f1;
+  border-color: #aaa;
+}
+.ribbon-button:disabled {
+  color: #999;
+  background: #f5f5f5;
+  cursor: not-allowed;
+  border-color: #ccc;
+}
+.ribbon-button.large {
+  font-size: 1.1em;
+  padding: 15px 30px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+}
+.ribbon-button.large:hover {
+  background: #004a9a;
+}
+.ribbon-button.large:disabled {
+  background: #aaa;
+  color: #eee;
+}
+
+/* --- Khu vực làm việc (Workspace) --- */
+.workspace {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.preview-toolbar {
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+.preview-area {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 20px;
+  background: var(--bg-dark);
+}
+#a4-preview-wrapper {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  transform: scale(0.85);
+  transform-origin: top center;
+}
+
+/* --- CSS CHO TRANG A4 (v9.0) --- */
+.a4-page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: "Arial", sans-serif;
+  page-break-after: always;
+}
+.draggable {
+  position: absolute;
+  cursor: move;
+  border: 1px dashed transparent;
+  transition: border-color 0.2s;
+}
+.draggable.dragging,
+.draggable:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  z-index: 1000;
+}
+.text-element {
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.barcode-small {
+  top: var(--small-top);
+  left: var(--small-left);
+}
+.barcode-large {
+  top: var(--large-top);
+  left: var(--large-left);
+  transform: translateX(-50%);
+}
+.text-spaced {
+  top: var(--spaced-top);
+  left: var(--spaced-left);
+  font-family: "Courier New", monospace;
+  font-size: var(--spaced-size);
+  font-weight: bold;
+  letter-spacing: 0.5em;
+}
+.text-main-title {
+  top: var(--title-top);
+  left: var(--title-left);
+  font-family: "Arial", sans-serif;
+  font-size: var(--title-size);
+  font-weight: bold;
+}
+.hidden {
+  display: none;
+}
+
+/* --- CSS POPUP (v10.0) --- */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.popup-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.popup-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 450px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+.popup-overlay.hidden .popup-content {
+  transform: scale(0.9);
+}
+.popup-content h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+.popup-content ul {
+  padding-left: 20px;
+}
+.popup-content li {
+  margin-bottom: 10px;
+}
+.popup-content button {
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* --- CSS KHI IN --- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  body > :not(.print-container) {
+    display: none;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .popup-overlay {
+    display: none;
+  }
+  .a4-page {
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    transform: scale(1);
+    border: none;
+  }
+  .draggable {
+    border-color: transparent !important;
+  }
+}
