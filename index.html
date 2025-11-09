@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>In Kệ Trống (WMS - Bản vá CODE39-EXT)</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bwip-js/4.7.0/bwip-js-min.js"></script>
+
+    <style>
+      /* CSS KHÔNG THAY ĐỔI */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f4f7f6;
+        color: #333;
+      }
+      h1 {
+        color: #0056b3;
+      }
+      #drop-zone {
+        border: 3px dashed #007bff;
+        border-radius: 12px;
+        width: 80%;
+        max-width: 600px;
+        padding: 50px 30px;
+        text-align: center;
+        font-size: 1.2em;
+        color: #555;
+        background-color: #fff;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+      }
+      #drop-zone.dragover {
+        background-color: #e6f7ff;
+        border-color: #0056b3;
+      }
+      #print-button {
+        display: none;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px 25px;
+        margin-top: 20px;
+        cursor: pointer;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+      }
+      #print-button:hover {
+        background-color: #218838;
+      }
+      #status-message {
+        margin-top: 15px;
+        font-size: 1.1em;
+        color: #d93025;
+      }
+      #status-message.success {
+        color: #218838;
+      }
+      #print-container {
+        display: none;
+      }
+
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+        body * {
+          visibility: hidden;
+        }
+        #print-container,
+        #print-container * {
+          visibility: visible;
+        }
+        #print-container {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          display: block;
+        }
+        .a4-page {
+          width: 297mm;
+          height: 210mm;
+          page-break-after: always;
+          position: relative;
+          overflow: hidden;
+          box-sizing: border-box;
+          padding: 10mm 15mm;
+          font-family: "Arial", sans-serif;
+        }
+        .a4-page::before,
+        .a4-page::after {
+          content: "";
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          border-color: #888;
+          border-style: solid;
+        }
+        .a4-page::before {
+          top: 10mm;
+          left: 10mm;
+          border-width: 2px 0 0 2px;
+        }
+        .a4-page::after {
+          top: 10mm;
+          right: 10mm;
+          border-width: 2px 2px 0 0;
+        }
+
+        .barcode-small {
+          position: absolute;
+          top: 15mm;
+          left: 15mm;
+        }
+        .barcode-large {
+          position: absolute;
+          top: 70mm;
+          left: 50%;
+          transform: translateX(-50%);
+          text-align: center;
+        }
+        .text-spaced {
+          position: absolute;
+          top: 145mm;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: "Courier New", monospace;
+          font-size: 20pt;
+          font-weight: bold;
+          letter-spacing: 0.5em;
+          white-space: nowrap;
+        }
+        .text-main-title {
+          position: absolute;
+          top: 165mm;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: "Arial", sans-serif;
+          font-size: 24pt;
+          font-weight: bold;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🖨️ Ứng dụng In Kệ Trống (Excel to PDF)</h1>
+    <p>Kéo và thả file Excel (.xlsx, .csv) của anh vào khung bên dưới.</p>
+    <div id="drop-zone">Kéo thả file Excel vào đây</div>
+    <p id="status-message"></p>
+    <button id="print-button">In <span id="label-count">0</span> nhãn</button>
+    <div id="print-container"></div>
+
+    <script>
+      // LOGIC UI KHÔNG THAY ĐỔI
+      const dropZone = document.getElementById("drop-zone");
+      const printButton = document.getElementById("print-button");
+      const printContainer = document.getElementById("print-container");
+      const statusMessage = document.getElementById("status-message");
+      const labelCount = document.getElementById("label-count");
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+      });
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+      printButton.addEventListener("click", () => {
+        window.print();
+      });
+
+      //
+      // ************************************************************
+      // *** 💡 SỬA LỖI LOGIC ĐỌC FILE (XỬ LÝ DỮ LIỆU BẨN) ***
+      // ************************************************************
+      //
+      function handleFile(file) {
+        printContainer.innerHTML = "";
+        printButton.style.display = "none";
+        statusMessage.textContent = "Đang xử lý file...";
+        statusMessage.className = "";
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          try {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+            const locations = json
+              .slice(1) // Bỏ hàng tiêu đề
+              .map((row) => (row.length >= 2 ? row[1] : row[0])) // Lấy cột B, hoặc A
+              .filter((loc) => loc != null) // Lọc bỏ null/undefined
+              .map((loc) => String(loc).trim()) // SỬA LỖI: Chuyển sang String và CẮT KHOẢNG TRẮNG
+              .filter((loc) => loc.length > 0); // Lọc bỏ chuỗi rỗng
+
+            if (locations.length === 0) {
+              throw new Error(
+                "Không tìm thấy dữ liệu ở cột B (hoặc A), hoặc file bị rỗng."
+              );
+            }
+
+            generatePrintLayout(locations);
+
+            statusMessage.textContent = `✅ Xử lý thành công! Tìm thấy ${locations.length} mã kệ.`;
+            statusMessage.className = "success";
+            labelCount.textContent = locations.length;
+            printButton.style.display = "block";
+          } catch (err) {
+            console.error("Đã xảy ra lỗi nghiêm trọng:", err);
+            statusMessage.textContent = `Lỗi: ${err.message}`;
+            statusMessage.className = "error";
+          }
+        };
+        reader.onerror = () => {
+          statusMessage.textContent = "Lỗi! Không thể đọc được file.";
+          statusMessage.className = "error";
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      //
+      // ************************************************************
+      // *** 💡 SỬA LỖI CUỐI CÙNG (DÙNG CODE39 EXTENDED) ***
+      // ************************************************************
+      //
+      function generatePrintLayout(locations) {
+        let htmlBuffer = "";
+
+        // 1. Tạo HTML Skeleton (Không thay đổi)
+        locations.forEach((loc, index) => {
+          htmlBuffer += `
+                    <div class="a4-page">
+                        <canvas id="bc-small-${index}" class="barcode-small"></canvas>
+                        <canvas id="bc-large-${index}" class="barcode-large"></canvas>
+                        <p class="text-spaced">${loc}</p>
+                        <p class="text-main-title">${loc}</p>
+                    </div>
+                `;
+        });
+        printContainer.innerHTML = htmlBuffer;
+
+        // 2. Lặp lại và gọi bwipjs.toCanvas
+        locations.forEach((loc, index) => {
+          // SỬA LỖI: Chỉ truyền chuỗi GỐC (đã được trim())
+          const barcodeValue = loc;
+
+          const commonOptions = {
+            // SỬA LỖI: Đổi sang CODE39 EXTENDED
+            bcid: "code39ext",
+            text: barcodeValue, // <-- Dữ liệu sạch (thư viện tự thêm *)
+            scale: 3,
+            includetext: false, // Tắt text
+            textxalign: "center",
+          };
+
+          // Vẽ barcode nhỏ
+          bwipjs.toCanvas(`bc-small-${index}`, {
+            ...commonOptions,
+            height: 10,
+            scale: 2,
+          });
+
+          // Vẽ barcode lớn
+          bwipjs.toCanvas(`bc-large-${index}`, {
+            ...commonOptions,
+            height: 24,
+            scale: 3,
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
